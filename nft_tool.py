@@ -74,7 +74,8 @@ def nft_rules_for_ports(ports, ipv4_address, args):
 
     # Generate the nftables command line
     add_pre = f"sudo nft add rule ip {args.table} {args.chain} "
-    nft_rule = f"{proto} dport {host_port} dnat to {ipv4_address}:{container_port}"
+    nft_rule = f"ip daddr {args.ip} {proto} dport {host_port} "
+    nft_rule = +f"dnat to {ipv4_address}:{container_port}"
 
     if args.add:
         run_cmd(
@@ -100,17 +101,15 @@ def nft_rules_for_ports(ports, ipv4_address, args):
         logging.error("Must specify --add or --delete")
 
 
-def main():
-    """
-    Main function that parses command-line arguments and generates nftables command lines.
-    """
-    # Parse command-line arguments
+def arguments():
+    """Get arguments from command line"""
     parser = argparse.ArgumentParser(
         description="Generate nftables command lines for Docker services"
     )
     parser.add_argument(
         "file", metavar="FILE", help="Path to the docker-compose.yaml file"
     )
+    parser.add_argument("--ip", help="IP of docker host")
     parser.add_argument(
         "--debug", metavar="DEBUG_LEVEL", default="WARN", help="Set logging level"
     )
@@ -137,8 +136,15 @@ def main():
     group.add_argument(
         "--delete", action="store_true", default=False, help="Delete existing rule"
     )
+    return parser.parse_args()
 
-    args = parser.parse_args()
+
+def main():
+    """
+    Main function that parses command-line arguments and generates nftables command lines.
+    """
+    # Parse command-line arguments
+    args = arguments()
 
     logging.basicConfig(level=args.debug)
 
