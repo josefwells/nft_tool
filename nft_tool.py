@@ -74,8 +74,8 @@ def nft_rules_for_ports(ports, ipv4_address, args):
 
     # Generate the nftables command line
     add_pre = f"sudo nft add rule ip {args.table} {args.chain} "
-    nft_rule = f"ip daddr {args.ip} {proto} dport {host_port} "
-    nft_rule = +f"dnat to {ipv4_address}:{container_port}"
+    nft_rule = f"fib daddr type local {proto} dport {host_port} "
+    nft_rule += f"dnat to {ipv4_address}:{container_port}"
 
     if args.add:
         run_cmd(
@@ -109,7 +109,6 @@ def arguments():
     parser.add_argument(
         "file", metavar="FILE", help="Path to the docker-compose.yaml file"
     )
-    parser.add_argument("--ip", help="IP of docker host")
     parser.add_argument(
         "--debug", metavar="DEBUG_LEVEL", default="WARN", help="Set logging level"
     )
